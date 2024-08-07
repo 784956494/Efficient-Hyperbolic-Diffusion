@@ -1,0 +1,1 @@
+python3 training.py --dataset mnist --c 1.0 --cuda 0 --manifold Lorentz --num-layers 4 --dim 64 --train_save_freq 5 --lr 0.01 --weight-decay 1e-4
