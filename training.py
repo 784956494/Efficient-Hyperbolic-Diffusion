@@ -6,13 +6,15 @@ import time
 import os
 import numpy as np
 import torch
+import ml_collections
 
-
+from tqdm import tqdm, trange
 from models.autoencoder import Autoencoder
+from models.score_model import Score_Model
 from optim import RiemannianAdam, select_optimizer
 from utils.data_utils import load_data, load_batch
 from utils.logging_utils import Logger
-
+from utils.ema import ExponentialMovingAverage
 '''
 TODO last: add things to config (encoder, decoder, loss function, path, hyp_lr and hyp_weight_decay, etc)
 '''
@@ -74,6 +76,7 @@ class Trainer(object):
                 best_mean_test_loss = mean_total_test_loss 
                 torch.save({
                     'epoch': epoch,
+                    'model_config': args,
                     'AE_state': model.state_dict()
                 }, f'./checkpoints/{self.args.checkpoint_path}/{epoch}.pth' )
 
@@ -84,9 +87,75 @@ class Trainer(object):
         print(' ')
 
     def train_sde(self):
-        
+        checkpoint = torch.load(self.config.ae_path,map_location=self.config.device)
+        AE_state = checkpoint['AE_state']
+        AE_config = checkpoint['model_config']
+        autoencoder = Autoencoder(AE_config)
+        autoencoder.load_state_dict(AE_state)
+        model = Score_Model(args)
+        optimizer, lr_scheduler = select_optimizer.select(args, model)
+        tot_params = sum([np.prod(p.size()) for p in model.parameters()])
+        print("total number of score model parameters: " + str(tot_params))
+        logger = Logger(str(os.path.join(self.args.save_dir, f'{self.args.checkpoint_path}.log')), mode='a')
+        loss_fn = model.loss_fn
+        ema = ExponentialMovingAverage(model, decay=args.ema)
+        for epoch in trange(0, (self.config.train.num_epochs), desc = '[Epoch]', position = 1, leave=False):
+            total_train_loss = []
+            total_test_loss = []
+            t_start = time.time()
 
+            model.train()
 
+            for batch, _ in self.train_loader:
+                batch = load_batch(args, batch)
+                output = model(autoencoder.encoder(batch))
+
+                loss = loss_fn(output, batch)
+
+                optimizer.zero_grad()
+                loss.backward()
+
+                if args.grad_clip is not None:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+                
+                optimizer.step()
+                ema.update(model.parameters())
+                
+                if lr_scheduler:
+                    lr_scheduler.step()
+
+                total_train_loss.append(loss.item())
+            
+            with torch.no_grad():
+                model.eval()
+                for _, test_batch in (self.test_loader):
+                    test_batch = load_batch(args, test_batch)
+
+                    ema.store(model.parameters())
+                    ema.copy_to(model.parameters())
+
+                    output = model(autoencoder.encoder(test_batch))
+                    loss = loss_fn(output, test_batch)
+
+                    total_test_loss.append(loss.item())
+
+                    ema.restore(model.parameters())
+            mean_total_train_loss = np.mean(self.total_train_loss)
+            mean_total_test_loss = np.mean(self.total_test_loss)
+            if (epoch + 1) % self.args.train_save_freq == 0 and best_mean_test_loss>mean_total_test_loss:
+                best_mean_test_loss = mean_total_test_loss 
+                torch.save({
+                    'epoch': epoch,
+                    'model_config': args,
+                    'score_model_state': model.state_dict(),
+                    'ema_state': ema.state_dict()
+                }, f'./checkpoints/score_mode/{self.args.checkpoint_path}/{epoch}.pth' )
+
+            if (epoch + 1) % self.args.log_freq == 0:
+                logger.log(f'{epoch + 1:03d} | {time.time() - t_start:.2f}s | '
+                           f'total train loss: {mean_total_train_loss:.3e} | '
+                           f'total test loss: {mean_total_test_loss:.3e} ', verbose=False)
+        print(' ')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -99,3 +168,4 @@ if __name__ == '__main__':
     args.device = 'cuda:' + str(args.cuda) if int(args.cuda) >= 0 else 'cpu'
     trainer = Trainer(args)
     trainer.train_AE()
+    trainer.train_sde()
