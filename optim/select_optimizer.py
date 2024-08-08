@@ -1,7 +1,7 @@
 from geoopt import ManifoldParameter
 import torch
 from optim.radam import RiemannianAdam
-from models.models import Autoencoder
+from models.models import Autoencoder, Score_Model
 class Optimizer(object):
     def __init__(self, model, euc_lr, hyp_lr, euc_weight_decay, hyp_weight_decay):
         euc_params = [p for n, p in model.named_parameters()
@@ -24,7 +24,7 @@ class Optimizer(object):
 def select(args, model):
     optimizer = None
     lr_scheduler = None
-    if args.manifold == 'Eulicdean' or isinstance(model, Autoencoder):
+    if args.manifold == 'Euclidean' or isinstance(model, Autoencoder) or (args.sde_manifold == 'Euclidean' and isinstance(model, Score_Model)):
         optimizer = torch.optim.Adam(model.parameters(), weight_decay=args.weight_decay, lr=args.lr)
     else:
         optimizer = Optimizer(model, args.lr, args.hyp_lr, args.weight_decay, args.hyp_weight_decay)

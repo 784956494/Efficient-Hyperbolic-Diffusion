@@ -54,7 +54,12 @@ config_args = {
         'AE_loss_fn':('OneHot_CrossEntropy', 'what function to use to the autoencoder'),
         'score_loss_fn':('SDE_Loss', 'objective function for score model'),
         'diffusion-type':('Lorentz', 'hyperbolic or Euclidean diffusion to run'),
-        'ae_path':('Ae', 'path to the autoencoder model')
+        'ae_path':('Ae', 'path to the autoencoder model'),
+        'sde_manifold': ('Euclidean', 'whcih manifold to use for score training'),
+        'ema':(0.999, 'decay for exponential moving average'),
+        'use_ema':(False, 'whether to use moving average for sampling'),
+        'num-samples':(1000, 'the number of samples to generate'),
+        'num-time-pts': (1000, 'the number of time steps during sampling')
     },
     'data_config': {
         'dataset': ('mnist', 'which dataset to use'),

@@ -1,0 +1,12 @@
+10000 | 0.05s | total train loss: 6.255e-01 | total test loss: 6.393e-01 
+20000 | 0.04s | total train loss: 6.216e-01 | total test loss: 6.231e-01 
+30000 | 0.04s | total train loss: 6.070e-01 | total test loss: 5.974e-01 
+40000 | 0.05s | total train loss: 5.858e-01 | total test loss: 5.943e-01 
+50000 | 0.05s | total train loss: 5.653e-01 | total test loss: 5.619e-01 
+60000 | 0.04s | total train loss: 5.462e-01 | total test loss: 5.595e-01 
+70000 | 0.04s | total train loss: 5.397e-01 | total test loss: 5.590e-01 
+80000 | 0.04s | total train loss: 5.466e-01 | total test loss: 5.499e-01 
+90000 | 0.04s | total train loss: 5.368e-01 | total test loss: 5.567e-01 
+100000 | 0.04s | total train loss: 5.414e-01 | total test loss: 5.425e-01 
+110000 | 0.04s | total train loss: 5.500e-01 | total test loss: 5.306e-01 
+120000 | 0.04s | total train loss: 5.437e-01 | total test loss: 5.542e-01 
