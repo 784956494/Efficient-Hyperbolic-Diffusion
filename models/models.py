@@ -12,9 +12,10 @@ import models.decoder as Decoders
 import models.losses as Loss
 import utils.math_utils as pmath
 
-class Score_Model(nn.Module):
+
+class Autoencoder(nn.Module):
     def __init__(self, args):
-        super(Score_Model, self).__init__()
+        super(Autoencoder, self).__init__()
         if args.c is not None:
             self.c = torch.tensor([args.c])
             if not args.cuda == -1:
@@ -36,4 +37,30 @@ class Score_Model(nn.Module):
         decoded_emb = self.decoder(encoded_emb)
         decoded_emb = self.manifold.logmap0(decoded_emb)[..., 1:]
         output = (encoded_emb, decoded_emb)
+        return output
+
+class Score_Model(nn.Module):
+    def __init__(self, args):
+        super(Score_Model, self).__init__()
+        if args.c is not None:
+            self.c = torch.tensor([args.c])
+            if not args.cuda == -1:
+                self.c = self.c.to(args.device)
+        else:
+            self.c = nn.Parameter(torch.Tensor([1.]))
+        #account for time as well
+        args.feat_dim = args.feat_dim + 1
+
+        self.layers = Encoders.get_encoder(args)
+        self.manifold = getattr(manifolds, args.sde_manifold)()
+        self.manifold_name = args.sde_manifold
+        self.loss_fn = getattr(Loss, args.score_loss_fn)()
+
+    def forward(self, x):
+        if self.manifold_name != 'Eucldiean':
+            xt = x.clone()
+            x = self.layers(x)
+            output = self.manifold.logmap(xt, x)
+        else:
+            output = self.layers(x)
         return output

@@ -51,7 +51,10 @@ config_args = {
         'double-precision': ('0', 'whether to use double precision'),
         'use-att': (0, 'whether to use hyperbolic attention or not'),
         'local-agg': (0, 'whether to local tangent space aggregation or not'),
-        'AE_loss_fn':('OneHot_CrossEntropy', 'what function to use to the autoencoder')
+        'AE_loss_fn':('OneHot_CrossEntropy', 'what function to use to the autoencoder'),
+        'score_loss_fn':('SDE_Loss', 'objective function for score model'),
+        'diffusion-type':('Lorentz', 'hyperbolic or Euclidean diffusion to run'),
+        'ae_path':('Ae', 'path to the autoencoder model')
     },
     'data_config': {
         'dataset': ('mnist', 'which dataset to use'),

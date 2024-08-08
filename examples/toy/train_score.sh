@@ -1,0 +1,1 @@
+python3 training.py --dataset toy --c 1.0 --cuda 0 --manifold Euclidean --epochs 150000 --num-layers 3 --dim 63 --train_save_freq 100 --lr 3e-4 --weight-decay 0 --feat-dim 64 --checkpoint_path toy/score_model --encoder MLP --ae_path checkpoints/toy/AE/14.pth

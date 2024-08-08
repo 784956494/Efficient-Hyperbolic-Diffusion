@@ -65,4 +65,11 @@ def get_encoder(args):
         )
         layers = nn.Sequential(*hgc_layers)
         return layers
+    if args.encoder == 'MLP':
+        hgc_layers = []
+        for i in range(len(dims) - 1):
+                hgc_layers.append(torch.nn.Linear(dims[i], dims[i+1]))
+                hgc_layers.append(act)
+        layers = nn.Sequential(*hgc_layers)
+        return layers
     return 0

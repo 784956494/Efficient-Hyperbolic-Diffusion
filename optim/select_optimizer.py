@@ -1,7 +1,7 @@
 from geoopt import ManifoldParameter
 import torch
 from optim.radam import RiemannianAdam
-from models.autoencoder import Autoencoder
+from models.models import Autoencoder
 class Optimizer(object):
     def __init__(self, model, euc_lr, hyp_lr, euc_weight_decay, hyp_weight_decay):
         euc_params = [p for n, p in model.named_parameters()

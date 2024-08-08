@@ -2,7 +2,7 @@ import numpy as np
 import optim
 import torch
 from utils.data_utils import load_data, load_batch
-from models.autoencoder import Autoencoder
+from models.models import Autoencoder
 from configs import parser
 import matplotlib.pyplot as plt
 from torchvision.utils import save_image
