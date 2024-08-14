@@ -59,7 +59,10 @@ config_args = {
         'ema':(0.999, 'decay for exponential moving average'),
         'use_ema':(False, 'whether to use moving average for sampling'),
         'num-samples':(1000, 'the number of samples to generate'),
-        'num-time-pts': (1000, 'the number of time steps during sampling')
+        'num-time-pts': (1000, 'the number of time steps during sampling'),
+        'score_path':('score', 'path to score model'),
+        'num- time-pts':(1000, 'number of time steps for sampling'),
+        'num_samples': (1500, 'number of samples to generate')
     },
     'data_config': {
         'dataset': ('mnist', 'which dataset to use'),

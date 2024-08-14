@@ -195,13 +195,15 @@ class Trainer(object):
         score_checkpoint = torch.load(self.args.score_path, map_location=self.args.device)
         score_state = score_checkpoint['score_model_state']
         score_config = score_checkpoint['model_config']
-        score_model = Autoencoder(score_config)
+        if score_config.manifold == 'Lorentz':
+            score_config.feat_dim = score_config.feat_dim-1
+        score_model = Score_Model(score_config)
         score_model = score_model.to(args.device)
         score_model.load_state_dict(score_state)
 
         sampler = Sampler(args, score_model)
-        generated_data = sampler.sample().detach()
-        plt.plot(generated_data[:, 0], generated_data[:, 1], 'C0.')
+        generated_data = AE_config.decoder(sampler.sample()).detach()
+        plt.plot(generated_data[:, 0], generated_data[:, 1], 'C1.')
         plt.savefig("gen_swiss_roll.jpg")
 
 if __name__ == '__main__':
@@ -215,4 +217,5 @@ if __name__ == '__main__':
     args.device = 'cuda:' + str(args.cuda) if int(args.cuda) >= 0 else 'cpu'
     trainer = Trainer(args)
     # trainer.train_AE()
-    trainer.train_sde()
+    # trainer.train_sde()
+    trainer.sample()
