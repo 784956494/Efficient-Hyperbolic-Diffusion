@@ -122,7 +122,9 @@ class Sampler(object):
                 dW = torch.randn_like(x_t, device = x_t.device)
                 x_h = h_drift * dt + h_diffusion * dW * (torch.abs(dt) ** 0.5)
                 print("lalalalla")
-                print(self.manifold.inner(x_h, x_ori))
+                uv = x_h * x_t
+                print(-uv.narrow(-1, 0, 1) + uv.narrow(-1, 1, x_h.size(-1)).sum(dim=-1, keepdim=True))
+                
                 torch.cuda.empty_cache()
                 assert(1==2)
         return x_t
