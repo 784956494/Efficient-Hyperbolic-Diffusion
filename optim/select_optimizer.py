@@ -24,7 +24,7 @@ class Optimizer(object):
 def select(args, model):
     optimizer = None
     lr_scheduler = None
-    if args.manifold == 'Euclidean' or isinstance(model, Autoencoder) or (args.sde_manifold == 'Euclidean' and isinstance(model, Score_Model)):
+    if args.optim_manifold == 'Euclidean':
         optimizer = torch.optim.Adam(model.parameters(), weight_decay=args.weight_decay, lr=args.lr)
     else:
         optimizer = Optimizer(model, args.lr, args.hyp_lr, args.weight_decay, args.hyp_weight_decay)

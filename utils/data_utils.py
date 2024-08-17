@@ -25,8 +25,8 @@ def load_mnist(args):
 def load_swiss(args):
     xnp, _ = make_swiss_roll(2000, noise=1.0)
     xtns = torch.as_tensor(xnp[:, [0, 2]] / 10.0, dtype=torch.float32)
-    plt.plot(xtns[:, 0], xtns[:, 1], 'C0.')
-    plt.savefig("swiss_roll.jpg")
+    # plt.plot(xtns[:, 0], xtns[:, 1], 'C0.')
+    # plt.savefig("swiss_roll.jpg")
     dset = torch.utils.data.TensorDataset(xtns)
     train_set, val_set = torch.utils.data.random_split(dset, [1500, 500])
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size,

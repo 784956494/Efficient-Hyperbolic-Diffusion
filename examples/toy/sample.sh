@@ -1,1 +1,1 @@
-python3 training.py --dataset toy --c 1.0 --cuda 0 --manifold Lorentz --num-layers 3 --dim 63 --feat-dim 2 --ae_path checkpoints/toy/AE/24.pth --score_path 'checkpoints/toy/score_model/129999.pth'
+python3 training.py --dataset toy --c 1.0 --cuda -1 --manifold Lorentz --dim 2 --feat-dim 2 --ae_path checkpoints/toy/AE/32_dim.pth --score_path 'checkpoints/toy/score_model/69999.pth'

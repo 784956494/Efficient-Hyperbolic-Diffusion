@@ -6,7 +6,6 @@ import time
 import os
 import numpy as np
 import torch
-import ml_collections
 
 from tqdm import tqdm, trange
 from models.models import Autoencoder, Score_Model, Sampler
@@ -89,13 +88,16 @@ class Trainer(object):
 
     def train_sde(self):
         checkpoint = torch.load(self.args.ae_path,map_location=self.args.device)
-        AE_state = checkpoint['AE_state']
-        AE_config = checkpoint['model_config']
-        if AE_config.manifold == 'Lorentz':
-            AE_config.feat_dim = AE_config.feat_dim-1
-        autoencoder = Autoencoder(AE_config)
-        autoencoder = autoencoder.to(args.device)
-        autoencoder.load_state_dict(AE_state)
+        # AE_state = checkpoint['AE_state']
+        # AE_config = checkpoint['model_config']
+        # if AE_config.manifold == 'Lorentz':
+        #     AE_config.feat_dim = AE_config.feat_dim-1
+        # autoencoder = Autoencoder(AE_config)
+        # autoencoder = autoencoder.to(args.device)
+        # autoencoder.load_state_dict(AE_state)
+        # for name, param in autoencoder.named_parameters():
+        #     if "encoder" in name or "decoder" in name:
+        #         param.requires_grad = False
         model = Score_Model(args)
         model.to(args.device)
         optimizer, lr_scheduler = select_optimizer.select(args, model)
@@ -117,11 +119,14 @@ class Trainer(object):
             model.train()
             for batch in self.train_loader:
                 batch = load_batch(args, batch)
-                if autoencoder.manifold.name in ['Lorentz', 'Hyperboloid']:
-                    x = torch.cat([torch.ones_like(batch)[..., 0:1], batch], dim=-1)
-                    x = autoencoder.manifold.expmap0(x)
-                encoded_emb = autoencoder.encoder(x)
-                loss = loss_fn(model, encoded_emb)
+                x = batch
+                # if autoencoder.manifold.name in ['Lorentz', 'Hyperboloid']:
+                # x = torch.cat([torch.ones_like(batch)[..., 0:1], batch], dim=-1)
+                # x = model.manifold.expmap0(x)
+                # x_time = ((batch ** 2).sum(-1, keepdims=True) + 1.).clamp_min(1e-6).sqrt()
+                # x = torch.cat([x_time, batch], dim=-1)
+                # encoded_emb = autoencoder.encoder(x)
+                loss = loss_fn(model, x)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -147,12 +152,14 @@ class Trainer(object):
                     if ema:
                         ema.store(model.parameters())
                         ema.copy_to(model.parameters())
-
-                    if autoencoder.manifold.name in ['Lorentz', 'Hyperboloid']:
-                        x = torch.cat([torch.ones_like(test_batch)[..., 0:1], test_batch], dim=-1)
-                        x = autoencoder.manifold.expmap0(x)
-                    encoded_emb = autoencoder.encoder(x)
-                    loss = loss_fn(model, encoded_emb)
+                    x = test_batch
+                    # if autoencoder.manifold.name in ['Lorentz', 'Hyperboloid']:
+                    # x = torch.cat([torch.ones_like(test_batch)[..., 0:1], test_batch], dim=-1)
+                    # x = model.manifold.expmap0(x)
+                    # x_time = ((test_batch ** 2).sum(-1, keepdims=True) + 1.).clamp_min(1e-6).sqrt()
+                    # x = torch.cat([x_time, test_batch], dim=-1)
+                    # encoded_emb = autoencoder.encoder(x)
+                    loss = loss_fn(model, x)
 
                     total_test_loss.append(loss.item())
 
@@ -183,14 +190,14 @@ class Trainer(object):
         print(' ')
     
     def sample(self):
-        AE_checkpoint = torch.load(self.args.ae_path, map_location=self.args.device)
-        AE_state = AE_checkpoint['AE_state']
-        AE_config = AE_checkpoint['model_config']
-        if AE_config.manifold == 'Lorentz':
-            AE_config.feat_dim = AE_config.feat_dim-1
-        autoencoder = Autoencoder(AE_config)
-        autoencoder = autoencoder.to(args.device)
-        autoencoder.load_state_dict(AE_state)
+        # AE_checkpoint = torch.load(self.args.ae_path, map_location=self.args.device)
+        # AE_state = AE_checkpoint['AE_state']
+        # AE_config = AE_checkpoint['model_config']
+        # if AE_config.manifold == 'Lorentz':
+        #     AE_config.feat_dim = AE_config.feat_dim-1
+        # autoencoder = Autoencoder(AE_config)
+        # autoencoder = autoencoder.to(args.device)
+        # autoencoder.load_state_dict(AE_state)
 
         score_checkpoint = torch.load(self.args.score_path, map_location=self.args.device)
         score_state = score_checkpoint['score_model_state']
@@ -202,8 +209,12 @@ class Trainer(object):
         score_model.load_state_dict(score_state)
 
         sampler = Sampler(args, score_model)
-        generated_data = AE_config.decoder(sampler.sample()).detach()
+        sampled_data = sampler.sample()
+        # generated_data = autoencoder.decoder(sampler.sample()).detach()
+        # generated_data = (score_model.manifold.logmap0(sampled_data)[..., 1:]).detach()
+        generated_data = (sampled_data[..., 1:]).detach()
         plt.plot(generated_data[:, 0], generated_data[:, 1], 'C1.')
+
         plt.savefig("gen_swiss_roll.jpg")
 
 if __name__ == '__main__':
@@ -217,5 +228,5 @@ if __name__ == '__main__':
     args.device = 'cuda:' + str(args.cuda) if int(args.cuda) >= 0 else 'cpu'
     trainer = Trainer(args)
     # trainer.train_AE()
-    # trainer.train_sde()
-    trainer.sample()
+    trainer.train_sde()
+    # trainer.sample()

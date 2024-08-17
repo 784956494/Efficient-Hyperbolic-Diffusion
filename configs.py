@@ -28,10 +28,11 @@ config_args = {
         'min-epochs': (1, 'do not early stop before min-epochs'),
         'lr_scheduler': (False, 'whether to use learning rate scheduler'),
         'train_save_freq':(10, 'how often to save the model'),
-        'encoder_loss':(False, 'is the autoencoder loss dependent on the encoded embedding')
+        'encoder_loss':(False, 'is the autoencoder loss dependent on the encoded embedding'),
+        'optim_manifold':('Euclidean', 'if the parameters include manifold parameters')
     },
     'model_config': {
-        'task': ('nc', 'which tasks to train on, can be any of [lp, nc]'),
+        'task': ('AE', 'which tasks to train on, can be any of [AE, score]'),
         'model': ('GCN', 'which encoder to use, can be any of [Shallow, MLP, HNN, GCN, GAT, HyperGCN, HyboNet]'),
         'encoder':('LorentzMLP', 'which encoder to use'),
         'decoder':('LorentzMLP', 'which decoder to use'),

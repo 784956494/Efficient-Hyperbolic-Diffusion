@@ -55,7 +55,7 @@ def get_encoder(args):
     if args.encoder == 'LorentzMLP':
         manifold = getattr(manifolds, args.manifold)()
         hgc_layers = []
-        for i in range(len(dims) - 1):
+        for i in range(len(dims) - 2):
             in_dim, out_dim = dims[i], dims[i + 1]
             act = acts[i]
             hgc_layers.append(
@@ -63,14 +63,19 @@ def get_encoder(args):
                         manifold, in_dim, out_dim, c, args.bias, args.dropout, nonlin=act if i != 0 else None
                 )
         )
+        hgc_layers.append(
+                hyp_layers.LorentzLinear(
+                        manifold, dims[-2], dims[-1], c, args.bias, args.dropout, nonlin=act if i != 0 else None
+                )
+        )
         layers = nn.Sequential(*hgc_layers)
         return layers
     if args.encoder == 'MLP':
         hgc_layers = []
-        for i in range(len(dims) - 1):
+        for i in range(len(dims) - 2):
                 hgc_layers.append(torch.nn.Linear(dims[i], dims[i+1]))
-                act = acts[i]
                 hgc_layers.append(nn.LogSigmoid())
+        hgc_layers.append(torch.nn.Linear(dims[-2], dims[-1]))
         layers = nn.Sequential(*hgc_layers)
         return layers
     return 0

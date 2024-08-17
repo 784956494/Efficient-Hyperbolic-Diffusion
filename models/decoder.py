@@ -49,13 +49,18 @@ def get_decoder(args):
     c = curvatures
     if args.decoder == 'LorentzMLP':
         hgc_layers = []
-        for i in range(len(dims) - 1):
+        for i in range(len(dims) - 2):
             in_dim, out_dim = dims[i], dims[i + 1]
             act = acts[i]
             hgc_layers.append(
                 hyp_layers.LorentzLinear(
                         manifold, in_dim, out_dim, c, args.bias, args.dropout, nonlin=act if i != 0 else None
                 )
+        )
+        hgc_layers.append(
+            hyp_layers.LorentzLinear(
+                    manifold, dims[-2], dims[-1], c, args.bias, args.dropout, nonlin=nn.Sigmoid()
+            )
         )
         layers = nn.Sequential(*hgc_layers)
         return layers

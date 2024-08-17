@@ -1,1 +1,1 @@
-python3 training.py --dataset toy --c 1.0 --cuda 0 --manifold Lorentz --num-layers 3 --dim 64 --train_save_freq 5 --lr 0.01 --weight-decay 0 --feat-dim 2 --checkpoint_path toy/AE --batch-size 256
+python3 training.py --dataset toy --c 1.0 --cuda -1 --manifold Lorentz --num-layers 3 --dim 32 --train_save_freq 5 --lr 0.01 --weight-decay 0 --feat-dim 2 --checkpoint_path toy/AE --batch-size 256 --epoch 200
