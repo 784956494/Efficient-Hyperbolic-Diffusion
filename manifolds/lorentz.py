@@ -32,6 +32,7 @@ class Lorentz(LorentzOri):
         else:
             reason = None
         return ok, reason
+    
 
     def _check_vector_on_tangent(
         self, x: torch.Tensor, u: torch.Tensor, *, atol=1e-5, rtol=1e-5, dim=-1
@@ -96,7 +97,11 @@ class Lorentz(LorentzOri):
     ) -> torch.Tensor:
         if norm_tan is True:
             u = self.proju(x, u, dim=dim)
+            assert(not u.isnan().any())
+            assert(not u.isinf().any())
         res = math.expmap(x, u, k=self.k, dim=dim)
+        assert(not res.isnan().any())
+        assert(not res.isinf().any())
         if project is True:
             return math.project(res, k=self.k, dim=dim)
         else:
@@ -178,6 +183,32 @@ class Lorentz(LorentzOri):
             return math.project(res, k=self.k, dim=dim)
         else:
             return res
+        
+    def random_normal_tangent(self, base_point, n_samples=1):
+        """Sample in the tangent space from the standard normal distribution.
+
+        Parameters
+        ----------
+        base_point : array-like, shape=[..., dim]
+            Point on the manifold.
+        n_samples : int
+            Number of samples.
+            Optional, default: 1.
+
+        Returns
+        -------
+        tangent_vec : array-like, shape=[..., dim]
+            Tangent vector at base point.
+        """
+        # ambiant_noise = gs.random.normal(size=(n_samples, self.dim))
+        # ambiant_noise = gs.concatenate(
+        #     [gs.zeros((n_samples, 1)), ambiant_noise], axis=-1
+        # )
+        device = base_point.device
+        ambiant_noise = torch.randn((n_samples, self.dim), device=device)
+        ambiant_noise = torch.cat([torch.zeros((n_samples, 1), device=device), ambiant_noise], axis=-1)
+        ambiant_noise = self.metric.transpfrom0(base_point, ambiant_noise)
+        return ambiant_noise
 
     def random_normal(
         self, *size, mean=0, std=1, dtype=None, device=None

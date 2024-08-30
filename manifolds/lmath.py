@@ -2,7 +2,7 @@ import torch
 from .utils import acosh, sqrt, clamp
 
 
-EXP_MAX_NORM = 10.
+EXP_MAX_NORM = 50.
 
 
 def inner(u, v, *, keepdim=False, dim=-1):
